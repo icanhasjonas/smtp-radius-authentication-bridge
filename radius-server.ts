@@ -65,6 +65,10 @@ export class RadiusAuthServer extends EventEmitter {
 	private async handleAccessRequestPacket(packet: RadiusPacket, remoteAddress: AddressInfo): Promise<void> {
 		const username = packet.attributes['User-Name']
 		const password = packet.attributes['User-Password']
+		if (!username || !password) {
+			log(`error: received accress requres without proper username/password from ${remoteAddress.address}`, packet)
+			await this.sendEncodedResponse('Access-Reject', packet, remoteAddress)
+		}
 
 		try {
 			const authResponse = await authenticate(username, password, this.options.domain, this.options.smtp.host)
